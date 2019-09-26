@@ -1,99 +1,95 @@
-# -*- coding: utf-8 -*-
-import requests
+#-*- coding: utf-8 -*- 
+
 import json
 import re
+import requests
 
-municipality0 = ["北京", "上海", "天津", "重庆"]
 municipality1 = ["北京市", "上海市", "天津市", "重庆市"]
-
-province0 = ["山西", "辽宁", "吉林", "黑龙江", "江苏", "浙江", "安徽", "福建", "江西", "山东", "河南", "湖北"
-             , "广东", "海南", "四川", "贵州", "云南", "陕西", "甘肃", "青海", "台湾", "河北", "湖南"]
-province1 = ["山西省", "辽宁省", "吉林省", "黑龙江省", "江苏省", "浙江省", "安徽省", "福建省", "江西省", "山东省"
-             , "河南省", "湖北省", "广东省", "海南省", "四川省", "贵州省", "云南省", "陕西省", "甘肃省", "青海省"
-             , "台湾省", "河北省", "湖南省"]
+municipality0 = ["北京", "上海", "天津", "重庆"]
+province0 = ["山西", "辽宁", "吉林", "黑龙江", "江苏", "浙江", "安徽", "福建", "江西", "山东", "河南", "湖北", "广东", "海南", "四川", "贵州", "云南", "陕西", "甘肃", "青海", "台湾", "河北", "湖南"]
+province1 = ["山西省", "辽宁省", "吉林省", "黑龙江省", "江苏省", "浙江省", "安徽省", "福建省", "江西省", "山东省", "河南省", "湖北省", "广东省", "海南省", "四川省", "贵州省", "云南省", "陕西省", "甘肃省", "青海省", "台湾省", "河北省", "湖南省"]
 
 province2 = ["内蒙古自治区", "广西壮族自治区", "西藏自治区", "宁夏回族自治区", "新疆维吾尔自治区", "香港特别行政区", "澳门特别行政区"]
-city = ["石家庄市", "唐山市", "秦皇岛市", "邯郸市", "邢台市", "保定市", "张家口市", "承德市", "沧州市", "廊坊市", "衡水市"
-        , "太原市", "大同市", "阳泉市", "长治市", "晋城市", "朔州市", "晋中市", "运城市", "忻州市", "临汾市", "吕梁市",
-        "沈阳市", "大连市", "鞍山市", "抚顺市", "本溪市", "丹东市", "锦州市", "营口市", "阜新市", "辽阳市", "盘锦市", "铁岭市",
-        "朝阳市", "葫芦岛市",
-        "长春市", "吉林市", "四平市", "辽源市", "通化市", "白山市", "松原市", "白城市", "延边朝鲜族自治州",
-        "郑州市", "开封市", "洛阳市", "平顶山市", "安阳市", "鹤壁市", "新乡市", "焦作市", "濮阳市", "许昌市", "漯河市", "三门峡市",
-        "南阳市", "商丘市", "信阳市", "周口市", "驻马店市", "济源市",
-        "南京市", "无锡市", "徐州市", "常州市", "苏州市", "南通市", "连云港市", "淮安市", "盐城市", "扬州市", "镇江市", "泰州市", "宿迁市",
-        "杭州市", "宁波市", "温州市", "嘉兴市", "湖州市", "绍兴市", "金华市", "衢州市", "舟山市", "台州市", "丽水市",
-        "合肥市", "芜湖市", "蚌埠市", "淮南市", "马鞍山市", "淮北市", "铜陵市", "安庆市", "黄山市", "滁州市", "阜阳市", "宿州市", "巢湖市",
-        "六安市", "亳州市", "池州市", "宣城市",
-        "福州市", "厦门市", "莆田市", "三明市", "泉州市", "漳州市", "南平市", "龙岩市", "宁德市",
-        "南昌市", "景德镇市", "萍乡市", "九江市", "新余市", "鹰潭市", "赣州市", "吉安市", "宜春市", "抚州市", "上饶市",
-        "济南市", "青岛市", "淄博市", "枣庄市", "东营市", "烟台市", "潍坊市", "威海市", "济宁市", "泰安市", "日照市", "莱芜市", "临沂市",
-        "德州市", "聊城市", "滨州市", "菏泽市",
-        "武汉市", "黄石市", "襄樊市", "十堰市", "荆州市", "宜昌市", "荆门市", "鄂州市", "孝感市", "黄冈市", "咸宁市", "随州市", "恩施州",
-        "仙桃市", "潜江市", "天门市", "神农架林区",
-        "长沙市", "株洲市", "湘潭市", "衡阳市", "邵阳市", "岳阳市", "常德市", "张家界市", "益阳市", "郴州市", "永州市",
-        "怀化市", "娄底市", "湘西州",
-        "广州市", "深圳市", "珠海市", "汕头市", "韶关市", "佛山市", "江门市", "湛江市", "茂名市", "肇庆市", "惠州市", "梅州市", "汕尾市",
-        "河源市", "阳江市", "清远市", "东莞市", "中山市", "潮州市", "揭阳市", "云浮市", "海口市", "龙华区", "秀英区", "琼山区", "美兰区", "三亚市",
-        "成都市", "自贡市", "攀枝花市", "泸州市", "德阳市", "绵阳市", "广元市", "遂宁市", "内江市", "乐山市", "南充市", "宜宾市", "广安市",
-        "达州市", "眉山市", "雅安市", "巴中市", "资阳市", "阿坝州", "甘孜州", "凉山州",
-        "贵阳市", "六盘水市", "遵义市", "安顺市", "铜仁地区", "毕节地区", "黔西南州", "黔东南州", "黔南州",
-        "昆明市", "大理市", "曲靖市", "玉溪市", "昭通市", "楚雄市", "红河市", "文山市", "思茅市", "西双版纳市", "保山市", "德宏市", "丽江市",
-        "怒江市", "迪庆市", "临沧市",
-        "西安市", "铜川市", "宝鸡市", "咸阳市", "渭南市", "延安市", "汉中市", "榆林市", "安康市", "商洛市",
-        "兰州市", "嘉峪关市", "金昌市", "白银市", "天水市", "武威市", "张掖市", "平凉市", "酒泉市", "庆阳市", "定西市", "陇南市", "临夏州",
-        "甘南州",
-        "西宁市", "海东地区", "海北州", "黄南州", "海南州", "果洛州", "玉树州", "海西州",
-        "哈尔滨市", "齐齐哈尔市", "鸡西市", "鹤岗市", "双鸭山市", "大庆市", "伊春市", "佳木斯市", "七台河市", "牡丹江市", "黑河市", "绥化市",
-        "大兴安岭地区",
-        "呼和浩特市", "包头市", "乌海市", "赤峰市", "通辽市", "鄂尔多斯市", "呼伦贝尔市", "巴彦淖尔市", "乌兰察布市", "兴安盟", "锡林郭勒盟",
-        "阿拉善盟",
-        "南宁市", "柳州市", "桂林市", "梧州市", "北海市", "防城港市", "钦州市", "贵港市", "玉林市", "百色市", "贺州市", "河池市", "来宾市",
-        "崇左市",
-        "拉萨市", "昌都市", "山南市", "日喀则市", "那曲市", "阿里市", "林芝市",
-        "银川市", "石嘴山市", "吴忠市", "固原市", "中卫市",
-        "乌鲁木齐市", "克拉玛依市", "吐鲁番市", "哈密市", "和田地区", "阿克苏地区", "喀什地区", "克孜勒苏柯尔克孜自治州", "巴音郭楞蒙古自治州",
-        "昌吉回族自治州", "博尔塔拉蒙古自治州", "伊犁哈萨克自治州", "塔城地区", "阿勒泰地区", "石河子市", "阿拉尔市", "图木舒克市", "五家渠市",
-        "台北市", "高雄市", "基隆市", "台中市", "台南市", "新竹市", "嘉义市", "台北县", "宜兰县", "桃园县", "新竹县", "苗栗县", "台中县",
-        "彰化县", "南投县", "云林县", "嘉义县", "台南县", "高雄县", "屏东县", "澎湖县", "台东县", "花莲县",
-        "中西区", "东区", "九龙城区", "观塘区", "南区", "深水埗区", "黄大仙区", "湾仔区", "油尖旺区", "离岛区", "葵青区", "北区", "西贡区",
-        "沙田区", "屯门区", "大埔区", "荃湾区", "元朗区"]
-direc=["晋州市", "遵化市", "武安市", "南宫市", "涿州市", "泊头市", "霸州市", "深州市", "新乐市", "平泉市", "迁安市", "沙河市", "安国市",
-       "任丘市", "三河市", "辛集市",
-       "定州市",
-       "河间市",
-       "高碑店市",
-       "黄骅市古交市",
-       "潞城市",
-       "高平市",
-	   "原平市",
-        "孝义市",
-        "介休市",
-        "侯马市",
-        "河津市",
-        "汾阳市",
-        "霍州市",
-        "永济市满洲里市",
-        "霍林郭勒市",
-        "丰镇市",
-        "乌兰浩特市",
-        "二连浩特市",
-       "牙克石市",
-       "扎兰屯市",
-       "根河市",
-       "额尔古纳市",
-       "阿尔山市",
-       "锡林浩特市",
-       "新民市",
-       "瓦房店市",
-       "庄河市",
-	   "海城市",
-	   "东港市",
-       "凤城市",
-       "凌海市",
-	"北镇市",
-	"大石桥市",
-	"盖州市",
-	"灯塔市",
+city = ["石家庄市", "唐山市", "秦皇岛市", "邯郸市", "邢台市", "保定市", "张家口市", "承德市", "沧州市", "廊坊市", "衡水市",
+				"太原市","大同市","阳泉市","长治市","晋城市","朔州市","晋中市","运城市","忻州市","临汾市","吕梁市",
+				"沈阳市","大连市","鞍山市","抚顺市","本溪市","丹东市","锦州市","营口市","阜新市","辽阳市","盘锦市","铁岭市","朝阳市","葫芦岛市",
+				"长春市","吉林市","四平市","辽源市","通化市","白山市","松原市","白城市","延边朝鲜族自治州",
+				"郑州市","开封市","洛阳市","平顶山市","安阳市","鹤壁市","新乡市","焦作市","濮阳市","许昌市","漯河市","三门峡市","南阳市","商丘市","信阳市","周口市","驻马店市","济源市",
+				"南京市","无锡市","徐州市","常州市","苏州市","南通市","连云港市","淮安市","盐城市","扬州市","镇江市","泰州市","宿迁市",
+		"杭州市", "宁波市", "温州市", "嘉兴市", "湖州市", "绍兴市", "金华市", "衢州市", "舟山市", "台州市", "丽水市",
+		"合肥市", "芜湖市", "蚌埠市", "淮南市", "马鞍山市", "淮北市", "铜陵市", "安庆市", "黄山市", "滁州市", "阜阳市", "宿州市", "巢湖市", "六安市", "亳州市", "池州市", "宣城市",
+		"福州市", "厦门市", "莆田市", "三明市", "泉州市", "漳州市", "南平市", "龙岩市", "宁德市",
+		"南昌市", "景德镇市", "萍乡市", "九江市", "新余市", "鹰潭市", "赣州市", "吉安市", "宜春市", "抚州市", "上饶市",
+		"济南市", "青岛市", "淄博市", "枣庄市", "东营市", "烟台市", "潍坊市", "威海市", "济宁市", "泰安市", "日照市", "莱芜市", "临沂市", "德州市", "聊城市", "滨州市", "菏泽市",
+		"武汉市", "黄石市", "襄樊市", "十堰市", "荆州市", "宜昌市", "荆门市", "鄂州市", "孝感市", "黄冈市", "咸宁市", "随州市", "恩施州", "仙桃市", "潜江市", "天门市", "神农架林区",
+		"长沙市", "株洲市", "湘潭市", "衡阳市", "邵阳市", "岳阳市", "常德市", "张家界市", "益阳市", "郴州市", "永州市", "怀化市", "娄底市", "湘西州",
+		"广州市", "深圳市", "珠海市", "汕头市", "韶关市", "佛山市", "江门市", "湛江市", "茂名市", "肇庆市", "惠州市", "梅州市", "汕尾市", "河源市", "阳江市", "清远市", "东莞市", "中山市", "潮州市", "揭阳市", "云浮市",
+		"海口市", "龙华区", "秀英区", "琼山区", "美兰区", "三亚市",
+		"成都市", "自贡市", "攀枝花市", "泸州市", "德阳市", "绵阳市", "广元市", "遂宁市", "内江市", "乐山市", "南充市", "宜宾市", "广安市", "达州市", "眉山市", "雅安市", "巴中市", "资阳市", "阿坝州", "甘孜州", "凉山州",
+		"贵阳市", "六盘水市", "遵义市", "安顺市", "铜仁地区", "毕节地区", "黔西南州", "黔东南州", "黔南州",
+		"昆明市", "大理市", "曲靖市", "玉溪市", "昭通市", "楚雄市", "红河市", "文山市", "思茅市", "西双版纳市", "保山市", "德宏市", "丽江市", "怒江市", "迪庆市", "临沧市",
+		"西安市", "铜川市", "宝鸡市", "咸阳市", "渭南市", "延安市", "汉中市", "榆林市", "安康市", "商洛市",
+		"兰州市", "嘉峪关市", "金昌市", "白银市", "天水市", "武威市", "张掖市", "平凉市", "酒泉市", "庆阳市", "定西市", "陇南市", "临夏州", "甘南州",
+		"西宁市", "海东地区", "海北州", "黄南州", "海南州", "果洛州", "玉树州", "海西州",
+		"哈尔滨市", "齐齐哈尔市", "鸡西市", "鹤岗市", "双鸭山市", "大庆市", "伊春市", "佳木斯市", "七台河市", "牡丹江市", "黑河市", "绥化市", "大兴安岭地区",
+		"呼和浩特市", "包头市", "乌海市", "赤峰市", "通辽市", "鄂尔多斯市", "呼伦贝尔市", "巴彦淖尔市", "乌兰察布市", "兴安盟", "锡林郭勒盟", "阿拉善盟",
+		"南宁市", "柳州市", "桂林市", "梧州市", "北海市", "防城港市", "钦州市", "贵港市", "玉林市", "百色市", "贺州市", "河池市", "来宾市", "崇左市",
+		"拉萨市", "昌都市", "山南市", "日喀则市", "那曲市", "阿里市", "林芝市",
+		"银川市", "石嘴山市", "吴忠市", "固原市", "中卫市",
+		"乌鲁木齐市", "克拉玛依市", "吐鲁番市", "哈密市", "和田地区", "阿克苏地区", "喀什地区", "克孜勒苏柯尔克孜自治州", "巴音郭楞蒙古自治州", "昌吉回族自治州", "博尔塔拉蒙古自治州", "伊犁哈萨克自治州", "塔城地区", "阿勒泰地区", "石河子市", "阿拉尔市", "图木舒克市", "五家渠市",
+		"台北市", "高雄市", "基隆市", "台中市", "台南市", "新竹市", "嘉义市", "台北县", "宜兰县", "桃园县", "新竹县", "苗栗县", "台中县", "彰化县", "南投县", "云林县", "嘉义县", "台南县", "高雄县", "屏东县", "澎湖县", "台东县", "花莲县",
+		"中西区", "东区", "九龙城区", "观塘区", "南区", "深水埗区", "黄大仙区", "湾仔区", "油尖旺区", "离岛区", "葵青区", "北区", "西贡区", "沙田区", "屯门区", "大埔区", "荃湾区", "元朗区"]
+direc=["晋州市",
+"遵化市",
+"武安市",
+"南宫市",
+"涿州市",
+"泊头市",
+"霸州市",
+"深州市",
+"新乐市",
+"平泉市",
+"迁安市",
+"沙河市",
+"安国市",
+"任丘市",
+"三河市",
+"辛集市",
+"定州市",
+"河间市",
+"高碑店市",
+"黄骅市古交市",
+"潞城市",
+"高平市",
+"原平市",
+"孝义市",
+"介休市",
+"侯马市",
+"河津市",
+"汾阳市",
+"霍州市",
+"永济市满洲里市",
+"霍林郭勒市",
+"丰镇市",
+"乌兰浩特市",
+"二连浩特市",
+"牙克石市",
+"扎兰屯市",
+"根河市",
+"额尔古纳市",
+"阿尔山市",
+"锡林浩特市",
+"新民市",
+"瓦房店市",
+"庄河市",
+"海城市",
+"东港市",
+"凤城市",
+"凌海市",
+"北镇市",
+"大石桥市",
+"盖州市",
+"灯塔市",
 "调兵山市",
 "开原市",
 "凌源市",
@@ -1332,30 +1328,28 @@ dis=["东城区",
 "伊州区"]
 
 
-
 def get_formatted_address(address):
     #根据百度地图api接口获取正地址编码也就是经纬度
-    url1 = 'https://restapi.amap.com/v3/geocode/geo?address='+address+'&output=JSON&key=a22337e1181873a96bc9701887d1c349'
+    url1='https://restapi.amap.com/v3/geocode/geo?address='+address+'&output=JSON&key=a22337e1181873a96bc9701887d1c349'
 
     #获取经纬度
-    resp1 = requests.get(url1)
+    resp1=requests.get(url1)
     #resp1_str=resp1.text
     #resp1_str=resp1_str.replace('showLocation&&showLocation','')
     #resp1_str=resp1_str[1:-1]
-    resp1_json = resp1.json()
+    resp1_json=resp1.json()
     location=resp1_json['geocodes'][0]['location']
 
     #根据经纬度获取结构化地址
     #lng=location.get('lng')
     #lat=location.get('lat')
-    url2 = 'https://restapi.amap.com/v3/geocode/regeo?output=JSON&location='+location+'&key=a22337e1181873a96bc9701887d1c349&radius=5&extensions=all'
-    resp2 = requests.get(url2)
+    url2='https://restapi.amap.com/v3/geocode/regeo?output=JSON&location='+location+'&key=a22337e1181873a96bc9701887d1c349&radius=5&extensions=all'
+    resp2=requests.get(url2)
     
-    resp2_json = resp2.json()
+    resp2_json=resp2.json()
     #提取结构化地址
-    formattted_address = resp2_json['regeocode']['addressComponent']
+    formattted_address=resp2_json['regeocode']['addressComponent']
     return formattted_address
-
 
 def find_5_address(address):
     province = ""
@@ -1368,17 +1362,17 @@ def find_5_address(address):
     flag_d = 0
     k = 0
     while k < 23:
-        pos1 = address.find(province1[k])#福建省
-        if pos1 > -1:
+        pos1 = address.find(province1[k])#福建
+        if pos1 > -1 :
             province = province1[k]
             address = address[pos1+3:]
-            flag = 1
+            flag=1
             break                    
-        k += 1
+        k+=1
             
     
 
-    k = 0
+    k=0
     while k < 4:
         pos1 = address.find(municipality1[k])#北京市
         if pos1 > -1:
@@ -1388,7 +1382,7 @@ def find_5_address(address):
             flag = 1
             flag_d = 1
             break
-        k += 1
+        k+=1
     if flag == 0:
         k = 0
         while k < 4:
@@ -1400,7 +1394,7 @@ def find_5_address(address):
                 flag = 1
                 flag_d = 1
                 break
-            k += 1
+            k+=1
 
     if flag == 0:
         k = 0
@@ -1409,9 +1403,9 @@ def find_5_address(address):
             if pos1 > -1:
                 province = province2[k]
                 address = address[pos1+len(province2[k]):]
-                flag = 1
+                flag=1
                 break                    
-            k += 1
+            k+=1
             
     if flag == 0:
         k = 0
@@ -1420,16 +1414,16 @@ def find_5_address(address):
             if pos1 > -1:
                 province = province0[k] + "省"
                 address = address[pos1+2:]
-                flag = 1
+                flag=1
                 break                    
-            k += 1
+            k+=1
             
-    flag = 0
+    flag=0
     if flag_d == 0:
         k = 0
         pos1 = address.find("自治州")#自治州
         if pos1 > -1:               
-            city = address[:pos1+3]
+            city= address[:pos1+3]
             address = address[pos1 +3:]
         else:
             
@@ -1437,51 +1431,51 @@ def find_5_address(address):
             while k < len(city):
                 pos1 = address.find(city[k])#福州市
                 if pos1 > -1:               
-                    city = city[k]
+                    city= city[k]
                     address = address[pos1 + len(city[k]):]
-                    flag = 1
+                    flag=1
                     break
                     
                 pos1 = address.find(city[k][0: len(city[k]) - 1])#福州
                 if pos1 > -1:
-                    if city[k][-1] == "市":
-                        flag = 1
+                    if city[k][-1]== "市":
+                        flag=1
                         city = city[k]
                         address = address[pos1 + len(city[k]) - 1:]
                         break 
-                k += 1
+                k+=1
 
             
     
-    flag2 = 0
-    k = 0
+    flag2=0
+    k=0
     while k<len(dis):
         pos1 = address.find(dis[k])#鼓楼区
         if pos1 > -1:
             district = dis[k]
             address = address[pos1 + len(dis[k]):]
-            flag2 = 1
+            flag2=1
             break
-        k += 1
+        k+=1
     
     if flag2==0:
         pos1 = address.find("县")#闽侯县
         if pos1 > -1:
-            if len(address)-1==pos1 or (len(address)>pos1+1 and address[pos1+1] != "道"):
+            if  len(address)-1==pos1 or (len(address)>pos1+1 and address[pos1+1]!="道"):
                 district = address[0:pos1 + 1]
                 address = address[pos1 + 1:]
-                flag2 = 1
+                flag2=1
           
-    if flag2 == 0:
-        k = 0
+    if flag2==0:
+        k=0
         while k<len(direc):
             pos1 = address.find(direc[k])#晋江市
             if pos1 > -1:
                 district = direc[k]
                 address = address[pos1 + len(direc[k]):]
-                flag2 = 1
+                flag2=1
                 break
-            k += 1
+            k+=1
     '''
     if flag2==0:
         pos1 = address.find("旗")#XX旗
@@ -1498,21 +1492,21 @@ def find_5_address(address):
         address = address[pos1 + 1:]
         
     else:
-        flag3 = 0
+        flag3=0
         pos1 = address.find("街道")#XX街道
         if pos1 > -1:
             if len(address)-1==pos1+1 or (len(address)>pos1+2 and address[pos1+2]!="办"):
                 town = address[0:pos1 + 2]
                 address = address[pos1 + 2:]
-                flag3 = 1
+                flag3=1
             
-        if flag3 == 0:
+        if flag3==0:        
             pos1 = address.find("乡")#XX乡
             if pos1 > -1:
-                if len(address)-1 == pos1 or (len(address)>pos1+1 and address[pos1+1] != "道"and address[pos1+1] != "村"):
+                if len(address)-1==pos1 or (len(address)>pos1+1 and address[pos1+1]!="道"and address[pos1+1]!="村"):
                     town = address[0:pos1 + 1]
                     address = address[pos1 + 1:]
-        if flag3 == 0:
+        if flag3==0:        
             pos1 = address.find("苏木")#XX苏木
 
             if pos1 > -1:
@@ -1531,9 +1525,9 @@ def find_5_address(address):
 
 def find_7_address(address):
     province = ""
-    city=""
-    district=""
-    town=""
+    city = ""
+    district = ""
+    town = ""
     street = ""
     t1 = ""
     t2 = ""
@@ -1549,77 +1543,88 @@ def find_7_address(address):
     
     else:
     
-        flag4 = 0
+        flag4=0
         pos1 = address.find("街")#XX街
         if pos1 > -1:
-            if len(address)-1 == pos1 or (len(address)>pos1+1 and address[pos1+1] != "道"):
+            if  len(address)-1==pos1 or (len(address)>pos1+1 and address[pos1+1]!="道"):
                 street = address[0: pos1 + 1]
                 address = address[pos1 + 1:]
-                flag4 = 1
-        if flag4 == 0:
+                flag4=1
+        if flag4==0:
             pos1 = address.find("巷")#XX巷
             if pos1 > -1:
                 street = address[0:pos1 + 1]
                 address = address[pos1 + 1:]
-                flag4 = 1
-        if flag4 == 0:
+                flag4=1
+        if flag4==0:
             pos1 = address.find("国道")#XX国道
             if pos1 > -1:
                 street = address[0:pos1 + 2]
                 address = address[pos1 + 2:]
-                flag4 = 1
-        if flag4 == 0:
+                flag4=1
+        if flag4==0:
             pos1 = address.find("省道")#XX省道
             if pos1 > -1:
                 street = address[0:pos1 + 2]
                 address = address[pos1 + 2:]
                 flag4=1
-        if flag4 == 0:
+        if flag4==0:
             pos1 = address.find("乡道")#XX乡道
             if pos1 > -1:            
                 street = address[0:pos1 + 2]
                 address = address[pos1 + 2:]
-                flag4 = 1
-        if flag4 == 0:
+                flag4=1            
+        if flag4==0:
             pos1 = address.find("县道")#XX县道
-            if pos1 > -1:
+            if pos1 > -1  :                   
                 street = address[0: pos1 + 2]
                 address = address[pos1 + 2:]
-                flag4 = 1
-        if flag4 == 0:
+                flag4=1
+        if flag4==0:
             pos1 = address.find("大道")#XX大道
-            if pos1 > -1:
+            if pos1 > -1  :                   
                 street = address[0: pos1 + 2]
                 address = address[pos1 + 2:]
-                flag4 = 1
-        if flag4 == 0:
-            pos1 = address.find("街区")  #XX街区
-            if pos1 > -1:
+                flag4=1
+        if flag4==0:
+            pos1 = address.find("街区")#XX街区
+            if pos1 > -1  :                   
                 street = address[0: pos1 + 2]
                 address = address[pos1 + 2:]
-                flag4 = 1
-        if flag4 == 0:
-            pos1 = address.find("胡同")  #XX胡同
+                flag4=1
+        if flag4==0:
+            pos1 = address.find("胡同")#XX胡同
             if pos1 > -1:           
                 street = address[0:pos1 + 2]
                 address = address[pos1 + 2:]
-                flag4 = 1
+                flag4=1
         '''if flag4==0:
             pos1 = address.find("村")#XX村
             if pos1 > -1 and address[pos1+1]!="委":           
                     street = address[0:pos1 + 1]
                     address = address[pos1 + 1:]
                     flag4=1'''
-        if flag4 == 0:
-            pos1 = address.find("里")# XX里
+        if flag4==0:
+            pos1 = address.find("里")#XX里
             if pos1 > -1:           
                     street = address[0:pos1 + 1]
                     address = address[pos1 + 1:]
-                    flag4 = 1
+                    flag4=1
+        '''
+        if flag4==0:
+            pos1 = address.find("社区")#XX社区
+            if pos1 > -1  :                   
+                street = address[0: pos1 + 2]
+                address = address[pos1 + 2:]
+                flag4=1'''
+                                    
 
+                        
+                        
+    
 
     pos1 = address.find("号")#xx号
-    if pos1 > -1 and ((pos1+1 <= len(address)-1 and address[pos1+1] != "楼")or pos1 == len(address)-1):
+    if pos1 > -1 and ((pos1+1<= len(address)-1 and address[pos1+1]!="楼")or pos1== len(address)-1):
         t1 = address[0:pos1 + 1]
         address = address[pos1 + 1:]
     else:
@@ -1628,30 +1633,33 @@ def find_7_address(address):
             t1 = address[0:pos1 + 1]
             address = address[pos1 + 1:]
 
-    t2 = address
-    return province, city, district, town, street, t1, t2
+    t2=address
+
+                
+    return province, city, district, town, street,t1,t2
+
 
 
 def main():
-    addr = input()
-    pos = addr.find(',')
-    pos_n = addr.find('!')
-    name = addr[pos_n + 1: pos]
-    temp = addr[pos + 1:]
+    add = input()
+    pos = add.find(',')
+    pos_n=add.find('!')
+    name=add[pos_n+1: pos]
+    temp=add[pos + 1:]
     pattern = re.compile(r'1[0-9]{10}')
-    a = pattern.search(addr)
-    tel = a.group(0)
-    temp = pattern.sub('',temp)
+    a = pattern.search( add)
+    tel=a.group(0)
+    temp =pattern.sub('',temp)
 
     #tel,temp=sub_tel(temp)
     
-    temp = temp[0:len(temp)-1]
-    if addr[0] == '1':
+    temp =temp[0:len(temp)-1]
+    if add[0] == '1':
     
         province, city, district, town, street= find_5_address(temp)
         article_info = {}
         data = json.loads(json.dumps(article_info))
-        address = []
+        address=[]
         address.append(province)
         address.append(city)
         address.append(district)
@@ -1662,11 +1670,11 @@ def main():
         data['地址'] = address
         print(json.dumps(data, ensure_ascii=False))
     
-    elif addr[0] == '2':
-        province, city, district, town, street,t1,t2 = find_7_address(temp)
+    elif add[0] == '2':
+        province, city, district, town, street,t1,t2= find_7_address(temp)
         article_info = {}
         data = json.loads(json.dumps(article_info))
-        address = []
+        address=[]
         address.append(province)
         address.append(city)
         address.append(district)
@@ -1680,8 +1688,8 @@ def main():
         print(json.dumps(data, ensure_ascii=False))
 
     else:
-        province, city, district, town, street, street_number, t2 = find_7_address(temp)
-        level = []
+        province, city, district, town, street,street_number,t2= find_7_address(temp)
+        level=[]
         level.append(province)
         level.append(city)
         level.append(district)
@@ -1689,20 +1697,39 @@ def main():
         level.append(street)
         level.append(street_number)
         level.append(t2)
-        level_name = ["province", "city", "district", "township", "street", "street_number"]
-        formattted_address = get_formatted_address(temp)
+        level_name=["province", "city", "district", "township", "street","street_number"]
+        formattted_address=get_formatted_address(temp)
         for i in range(4):
-            if level[i] == "":
+            if level[i]=="":
                 if formattted_address[level_name[i]]:
-                    level[i] = formattted_address[level_name[i]]
+                    level[i]=formattted_address[level_name[i]]
 
         if level[0][-1] == "市":
-            level[1] = level[0][0:2]
+            level[1]=level[0][0:2]
+        '''if level[4]=="":
+            if formattted_address['streetNumber']['street']:
+                level[4]=formattted_address['streetNumber']['street']
+        if level[5]=="":
+            if formattted_address['streetNumber']['number']:
+                level[5]=formattted_address['streetNumber']['number']
+        if level[6]=="":
+            if formattted_address['building']['name']:
+                level[6]=formattted_address['building']['name']
+            elif formattted_address['neighborhood']['name']:
+                level[6]=formattted_address['neighborhood']['name']
+        '''
 
+                        
         article_info = {}
         data = json.loads(json.dumps(article_info))
         data['姓名'] = name
         data['手机'] = tel
         data['地址'] = level
+        
         print(json.dumps(data, ensure_ascii=False))
+        
+
+    #print(formattted_address['district'])
+
+
 main()
