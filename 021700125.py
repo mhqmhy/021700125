@@ -8,7 +8,7 @@ province_ = ["山西","辽宁","吉林","黑龙江","江苏","浙江","安徽","
 province_1 = ["山西省","辽宁省","吉林省","黑龙江省","江苏省","浙江省","安徽省","福建省","江西省","山东省","河南省","湖北省","广东省","海南省","四川省","贵州省","云南省","陕西省","甘肃省","青海省","台湾省","河北省","湖南省"]
 
 province_2 =["内蒙古自治区","广西壮族自治区","西藏自治区","宁夏回族自治区","新疆维吾尔自治区","香港特别行政区","澳门特别行政区"]
-city_= [ 			"石家庄市","唐山市","秦皇岛市","邯郸市","邢台市","保定市","张家口市","承德市","沧州市","廊坊市","衡水市",
+city_= [ 		"石家庄市","唐山市","秦皇岛市","邯郸市","邢台市","保定市","张家口市","承德市","沧州市","廊坊市","衡水市",
 				"太原市","大同市","阳泉市","长治市","晋城市","朔州市","晋中市","运城市","忻州市","临汾市","吕梁市",
 				"沈阳市","大连市","鞍山市","抚顺市","本溪市","丹东市","锦州市","营口市","阜新市","辽阳市","盘锦市","铁岭市","朝阳市","葫芦岛市",
 				"长春市","吉林市","四平市","辽源市","通化市","白山市","松原市","白城市","延边朝鲜族自治州",
@@ -1656,92 +1656,95 @@ def divide_address_7(address):
 
 
 def main():
-    add = input()
-    pos = add.find(',')
-    pos_n=add.find('!')
-    name=add[pos_n+1: pos]
-    temp=add[pos + 1:]
-    pattern = re.compile(r'1[0-9]{10}')
-    a = pattern.search( add)
-    tel=a.group(0)
-    temp =pattern.sub('',temp)
+	while(1):
+		add = input()
+		if(add == 'END'):
+			break
+		pos = add.find(',')
+		pos_n = add.find('!')
+		name = add[pos_n+1: pos]
+		temp = add[pos + 1:]
+		pattern = re.compile(r'1[0-9]{10}')
+		a = pattern.search(add)
+		tel = a.group(0)
+		temp = pattern.sub('',temp)
 
-    #tel,temp=sub_tel(temp)
-    
-    temp =temp[0:len(temp)-1]
-    if add[0] == '1':
-    
-        province, city, district, town, street= divide_address_5(temp)
-        article_info = {}
-        data = json.loads(json.dumps(article_info))
-        address=[]
-        address.append(province)
-        address.append(city)
-        address.append(district)
-        address.append(town)
-        address.append(street)
-        data['姓名'] = name
-        data['手机'] = tel
-        data['地址'] = address
-        print(json.dumps(data, ensure_ascii=False))
-    
-    elif add[0] == '2':
-        province, city, district, town, street,t1,t2= divide_address_7(temp)
-        article_info = {}
-        data = json.loads(json.dumps(article_info))
-        address=[]
-        address.append(province)
-        address.append(city)
-        address.append(district)
-        address.append(town)
-        address.append(street)
-        address.append(t1)
-        address.append(t2)
-        data['姓名'] = name
-        data['手机'] = tel
-        data['地址'] = address
-        print(json.dumps(data, ensure_ascii=False))
+		#tel,temp=sub_tel(temp)
 
-    else:
-        province, city, district, town, street,street_number,t2= divide_address_7(temp)
-        level=[]
-        level.append(province)
-        level.append(city)
-        level.append(district)
-        level.append(town)
-        level.append(street)
-        level.append(street_number)
-        level.append(t2)
-        level_name=["province", "city", "district", "township", "street","street_number"]
-        formattted_address=get_formatted_address(temp)
-        for i in range(4):
-            if level[i]=="":
-                if formattted_address[level_name[i]]:
-                    level[i]=formattted_address[level_name[i]]
+		temp = temp[0:len(temp)-1]
+		if add[0] == '1':
 
-        if level[0][-1]=="市":
-            level[1]=level[0][0:2]
-        '''if level[4]=="":
-            if formattted_address['streetNumber']['street']:
-                level[4]=formattted_address['streetNumber']['street']
-        if level[5]=="":
-            if formattted_address['streetNumber']['number']:
-                level[5]=formattted_address['streetNumber']['number']
-        if level[6]=="":
-            if formattted_address['building']['name']:
-                level[6]=formattted_address['building']['name']
-            elif formattted_address['neighborhood']['name']:
-                level[6]=formattted_address['neighborhood']['name']
-        '''
+			province, city, district, town, street= divide_address_5(temp)
+			article_info = {}
+			data = json.loads(json.dumps(article_info))
+			address=[]
+			address.append(province)
+			address.append(city)
+			address.append(district)
+			address.append(town)
+			address.append(street)
+			data['姓名'] = name
+			data['手机'] = tel
+			data['地址'] = address
+			print(json.dumps(data, ensure_ascii=False))
 
-                        
-        article_info = {}
-        data = json.loads(json.dumps(article_info))
-        data['姓名'] = name
-        data['手机'] = tel
-        data['地址'] = level
-        
-        print(json.dumps(data, ensure_ascii=False))
+		elif add[0] == '2':
+			province, city, district, town, street,t1,t2= divide_address_7(temp)
+			article_info = {}
+			data = json.loads(json.dumps(article_info))
+			address=[]
+			address.append(province)
+			address.append(city)
+			address.append(district)
+			address.append(town)
+			address.append(street)
+			address.append(t1)
+			address.append(t2)
+			data['姓名'] = name
+			data['手机'] = tel
+			data['地址'] = address
+			print(json.dumps(data, ensure_ascii=False))
+
+		else:
+			province, city, district, town, street,street_number,t2= divide_address_7(temp)
+			level=[]
+			level.append(province)
+			level.append(city)
+			level.append(district)
+			level.append(town)
+			level.append(street)
+			level.append(street_number)
+			level.append(t2)
+			level_name=["province", "city", "district", "township", "street","street_number"]
+			formattted_address=get_formatted_address(temp)
+			for i in range(4):
+				if level[i]=="":
+					if formattted_address[level_name[i]]:
+						level[i]=formattted_address[level_name[i]]
+
+			if level[0][-1]=="市":
+				level[1]=level[0][0:2]
+			'''if level[4]=="":
+				if formattted_address['streetNumber']['street']:
+					level[4]=formattted_address['streetNumber']['street']
+			if level[5]=="":
+				if formattted_address['streetNumber']['number']:
+					level[5]=formattted_address['streetNumber']['number']
+			if level[6]=="":
+				if formattted_address['building']['name']:
+					level[6]=formattted_address['building']['name']
+				elif formattted_address['neighborhood']['name']:
+					level[6]=formattted_address['neighborhood']['name']
+			'''
+
+
+			article_info = {}
+			data = json.loads(json.dumps(article_info))
+			data['姓名'] = name
+			data['手机'] = tel
+			data['地址'] = level
+
+			print(json.dumps(data, ensure_ascii=False))
         
 
     #print(formattted_address['district'])
